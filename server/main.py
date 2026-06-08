@@ -2,10 +2,18 @@ import asyncio
 import json
 import websockets
 from collections import deque
+
+# For environment variables
+import dotenv
+import os
+
 import random
 import time
 
-FINNHUB_TOKEN = "d5a4f7hr01qu56n04dd0d5a4f7hr01qu56n04ddg"
+# Load environment variables
+dotenv.load_dotenv()
+
+FINNHUB_TOKEN = os.getenv("FINNHUB_TOKEN")
 FINNHUB_WS = f"wss://ws.finnhub.io?token={FINNHUB_TOKEN}"
 SYMBOL = "NVDA"
 

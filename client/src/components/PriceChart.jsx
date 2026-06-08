@@ -23,7 +23,7 @@ export default function PriceChart() {
     const candleSeries = chart.addSeries(CandlestickSeries);
     candleSeriesRef.current = candleSeries;
 
-    wsRef.current = new WebSocket("ws://localhost:8000/ws");
+    wsRef.current = new WebSocket("ws://192.168.1.124:8000/ws");
 
     wsRef.current.onopen = () => {
       console.log("Connected to backend");
