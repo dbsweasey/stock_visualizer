@@ -1,3 +1,4 @@
-# Client
-python-dotenv
 fastapi
+uvicorn[standard]
+
+python-dotenv

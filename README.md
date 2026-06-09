@@ -32,3 +32,4 @@ server/
 [] clean up code, comment, and stash unused but maybe future code (mwe.py, fastapi-sol.py, mock_data.py, etc.)
 [] add logging
 [] abstract any time related actions to time.py
+[] generalize where possible (e.g. subscriptions)
