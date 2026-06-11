@@ -5,5 +5,6 @@ from models.candle import Candle
 @dataclass
 class Event:
     type: str
-    timeframe: int
+    symbol: str
+    interval: int
     candle: Candle

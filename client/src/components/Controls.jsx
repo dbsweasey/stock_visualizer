@@ -1,10 +1,10 @@
-export default function Controls({ control }) {
+export default function Controls({ intervals, control }) {
+  console.log(intervals)
   return (
     <div>
-      <button onClick={() => control(1)}>1s</button>
-      <button onClick={() => control(5)}>5s</button>
-      <button onClick={() => control(15)}>15s</button>
-      <button onClick={() => control(60)}>1m</button>
+      {intervals.map(({ value, label }) => (
+        <button key={value} onClick={() => control(value)}>{label}</button>
+      ))}
     </div>
   );
 }

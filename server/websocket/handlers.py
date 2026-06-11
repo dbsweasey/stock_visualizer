@@ -8,9 +8,9 @@ class WebSocketHandler:
         self.manager = manager
         self.engine = engine
 
-    async def send_snapshot(self, ws: WebSocket, interval: int):
-        logger.info(f"Sending snapshot of interval {interval}")
-        candles = self.engine.get_history(interval)
+    async def send_snapshot(self, ws: WebSocket, symbol: str, interval: int):
+        logger.info(f"Sending snapshot of {symbol}: {interval}")
+        candles = self.engine.get_history(symbol, interval)
 
         await ws.send_json({
             "type": "snapshot",
@@ -18,14 +18,16 @@ class WebSocketHandler:
         })
 
     async def handle_message(self, ws: WebSocket, msg: dict):
+        logger.info(f"Received message: {msg}")
         msg_type = msg.get("type")
 
         if msg_type == "update_interval":
             interval = msg["interval"]
+            symbol = msg["symbol"]
             logger.info(f"Received request to switch interval to {interval}")
 
-            self.manager.subscribe(ws, interval)
-            await self.send_snapshot(ws, interval)
+            self.manager.subscribe(ws, symbol, interval)
+            await self.send_snapshot(ws, symbol, interval)
     
     async def handle_connection(self, ws: WebSocket):
         logger.info("Creating websocket...")
@@ -33,7 +35,7 @@ class WebSocketHandler:
 
         try:
             # First snapshot, subscribe at 5 by default
-            await self.send_snapshot(ws, 5)
+            await self.send_snapshot(ws, "AAPL", 5)
 
             while True:
                 msg = await ws.receive_json()

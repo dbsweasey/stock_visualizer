@@ -2,28 +2,45 @@ import asyncio
 import random
 import time
 
+from alpaca.data.live import StockDataStream
+
 from models.tick import Tick
+from config import AVAILABLE_SYMBOLS, ALPACA_API_KEY, ALPACA_SECRET
 
 import logging
 logger = logging.getLogger(__name__)
 
 TICK_QUEUE = asyncio.Queue()
 
+stock_stream = StockDataStream(ALPACA_API_KEY, ALPACA_SECRET)
+
 async def random_ingest():
     price = 100.0
-    count = 0
+    price_map = {symbol: 100.0 for symbol in AVAILABLE_SYMBOLS}
 
     while True:
-        change = random.uniform(-0.5, 0.5)
-        price *= 1 + change / 100
-        price = round(price, 2)
-        count += 1 
+        for symbol in price_map:
+            change = random.uniform(-0.5, 0.5)
+            price = price_map[symbol] * (1 + change / 100)
+            price = round(price, 2)
+            price_map[symbol] = price
+            tick = Tick(price, symbol, time.time())
+            await TICK_QUEUE.put(tick)
+            logger.info(f"Ingesting tick from {symbol}...")
 
-        tick = Tick(price, time.time())
-
-        await TICK_QUEUE.put(tick)
-        logger.info(f"Creating tick #{count} since server boot")
         await asyncio.sleep(1)
+
+async def data_ingest(data):
+    logger.info("Callback.")
+    logger.info(data)
+
+async def ingest():
+    stock_stream.subscribe_trades(data_ingest, "SPY", "AAPL", "TSLA", "NVDA", "MSFT")
+    
+    try:
+        await stock_stream._run_forever()
+    finally:
+        await stock_stream.stop()
 
 # Not working, legacy code.
 '''

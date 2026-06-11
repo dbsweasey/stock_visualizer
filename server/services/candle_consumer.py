@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 from services.ingest import TICK_QUEUE
 
 async def candle_consumer(engine, manager):
@@ -8,6 +11,5 @@ async def candle_consumer(engine, manager):
 
         for event in events:
             await manager.broadcast(
-                event.timeframe,
-                event.__dict__
+                event
             )
