@@ -1,117 +1,67 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { createChart, CandlestickSeries } from "lightweight-charts";
-import Controls from "./Controls";
-import Symbols from "./Symbols";
+import { useChartSubscription } from "../hooks/useChartSubscription";
 
-export default function PriceChart({intervals, symbols}) {
-  const chartContainerRef = useRef(null);
-  const candleSeriesRef = useRef(null);
-  const wsRef = useRef(null);
-//   const priceRef = useRef(100);
-  const [chartInterval, setChartInterval] = useState(5);
-  const [chartIntervalText, setChartIntervalText] = useState("5 seconds");
-  const [chartSymbol, setChartSymbol] = useState("AAPL");
+/**
+ * 
+ * PriceChart
+ * 
+ * Responsible for rendering chart. Separate from communication channels.
+ * Data is ingested from useChartSubscription
+ * 
+ * @param {string} symbol
+ * @param {number} interval (seconds)
+ */
+export default function PriceChart({ symbol, interval }) {
+  const containerRef = useRef(null);
+  const chartRef = useRef(null);
+  const seriesRef = useRef(null);
 
+  // ── Chart init and cleanup ───────────────────────────────────────────────
   useEffect(() => {
-    const chart = createChart(chartContainerRef.current, {
-      width: chartContainerRef.current.clientWidth,
+    const chart = createChart(containerRef.current, {
+      width: containerRef.current.clientWidth,
       height: 400,
-      layout: { background: { color: "#ffffff" }, textColor: "black" },
-      grid: { vertLines: { color: "#eee" }, horzLines: { color: "#eee" } },
-      timeScale: {
-        timeVisible: true,
-        secondsVisible: true,
+      layout: { background: { color: "#0f1117" }, textColor: "#c9d1d9" },
+      grid: {
+        vertLines: { color: "#1e2330" },
+        horzLines: { color: "#1e2330" },
       },
+      timeScale: { timeVisible: true, secondsVisible: true },
     });
 
-    const candleSeries = chart.addSeries(CandlestickSeries);
-    candleSeriesRef.current = candleSeries;
+    const series = chart.addSeries(CandlestickSeries);
+    chartRef.current = chart;
+    seriesRef.current = series;
 
-    wsRef.current = new WebSocket("ws://127.0.0.1:8000/ws");
+    // Resize handler
+    const ro = new ResizeObserver(() => {
+      chart.applyOptions({ width: containerRef.current.clientWidth });
+    });
+    ro.observe(containerRef.current);
 
-    wsRef.current.onopen = () => {
-      console.log("Connected to backend");
-    };
-
-    wsRef.current.onerror = (e) => {
-      console.log(e);
-    };
-
-    wsRef.current.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
-      console.log(data);
-
-      if (data.type === "chart" || data.type === "snapshot") {
-        console.log("Updating chart...");
-        candleSeries.setData(data.candles);
-      } else if (
-        data.type === "candle_update" ||
-        data.type === "candle_closed"
-      ) {
-        candleSeries.update(data.candle);
-      }
-    };
-
+    // Cleanup
     return () => {
-      wsRef.current.close();
+      ro.disconnect();
       chart.remove();
     };
   }, []);
 
-  function getIntervalText(interval) {
-    let intervalText = '';
-    let reducedInterval = interval
-    if (interval >= 3600) {
-      reducedInterval = interval / 3600
-      intervalText = 'hour'
-    } else if (interval >= 60) {
-      reducedInterval = interval / 60
-      intervalText = 'minute'
-    } else {
-      intervalText += 'second'
-    }
-    if (reducedInterval > 1)
-      intervalText += 's'
-    return `${reducedInterval} ${intervalText}`
-  }
+  // ── Subscription handlers ────────────────────────────────────────────────
+  const onSnapshot = useCallback((candles) => {
+    seriesRef.current?.setData(candles);
+  }, []);
 
-  function updateInterval(interval) {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current?.send(
-        JSON.stringify({
-          type: "update_interval",
-          symbol: chartSymbol,
-          interval,
-        })
-      ); 
-      setChartInterval(interval)
-      setChartIntervalText(getIntervalText(interval))
-    }
-  }
+  const onUpdate = useCallback((candle) => {
+    seriesRef.current?.update(candle);
+  }, []);
 
-  function changeSymbol(symbol) {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current?.send(
-        JSON.stringify({
-          type: "update_interval",
-          interval: chartInterval,
-          symbol,
-        })
-      );
-      console.log(`Old Symbol: ${chartSymbol}, New Symbol: ${symbol}, Interval: ${chartInterval}`)
-      setChartSymbol(symbol)
-    }
-  }
+  useChartSubscription(symbol, interval, { onSnapshot, onUpdate });
 
   return (
-    <div>
-      <h1>{chartSymbol} at interval {chartIntervalText}</h1>
-      <div
-        ref={chartContainerRef}
-        style={{ width: "100%", height: "400px", marginTop: "20px" }}
-      ></div>
-      <Controls intervals={intervals} control={updateInterval} />
-      <Symbols symbols={symbols} changeSymbol={changeSymbol} />
-    </div>
+    <div
+      ref={containerRef}
+      style={{ width: "100%", height: "400px" }}
+    />
   );
 }

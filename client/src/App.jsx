@@ -1,23 +1,23 @@
 import { useState, useEffect } from "react";
 
-import PriceChart from "./components/PriceChart";
+import { DEV_IP, PORT } from "./config";
+
+import PriceChart from "./components/PriceChartOld";
+import { WebSocketProvider } from "./services/WebSocketContext";
+import Dashboard from "./components/Dashboard";
+import useDashboardConfig from "./hooks/UseDashboardConfig";
 
 function App() {
 
-  const [config, setConfig] = useState(null);
+  // Get config
+  const { config, loading } = useDashboardConfig()
 
-  useEffect(() => {
-    console.log("Fetching config...")
-    fetch("http://127.0.0.1:8000/config")
-      .then(r => r.json())
-      .then(setConfig);
-  }, [])
-
-  if (!config) return <p>Loading...</p>
+  // Could make this nicer 
+  if (!loading) return <p>Loading...</p>
   return (
-    <div>
-      <PriceChart intervals = {config.intervals} symbols = {config.symbols}/>
-    </div>
+    <WebSocketProvider>
+      <Dashboard symbols={config.symbols} intervals={config.intervals}/>
+    </WebSocketProvider>
   );
 }
 

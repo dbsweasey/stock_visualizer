@@ -2,8 +2,8 @@
 Real-time stock visualizer with AI integration for analytics and technical indicators. Monolithic, for now
 
 ### TO-DO
-[] - Comment backend
-[] - Ensure live data works, hook into backend
-[] - Change symbol buttons to dropdown
-[] - Cleanup, organize frontend code
+[] - improve logging in front and backend
+[] - migrate "snapshot/on subscribe" data to API to combine with Alpaca historical data
+[] - Down the line, tracemalloc for memory optimization
+[] - Persitence with Redis cache
 

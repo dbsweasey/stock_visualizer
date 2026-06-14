@@ -1,0 +1,13 @@
+/* ── Symbol Select ─────────────────────────────────────────────────────── */
+.symbol__dropdown {
+  background: #1a8cff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 6px;
+  margin-left: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
