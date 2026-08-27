@@ -1,8 +1,3 @@
-import { useState, useEffect } from "react";
-
-import { DEV_IP, PORT } from "./config";
-
-import PriceChart from "./components/PriceChartOld";
 import { WebSocketProvider } from "./services/WebSocketContext";
 import Dashboard from "./components/Dashboard";
 import useDashboardConfig from "./hooks/UseDashboardConfig";
@@ -13,7 +8,7 @@ function App() {
   const { config, loading } = useDashboardConfig()
 
   // Could make this nicer 
-  if (!loading) return <p>Loading...</p>
+  if (loading) return <p>Loading...</p>
   return (
     <WebSocketProvider>
       <Dashboard symbols={config.symbols} intervals={config.intervals}/>

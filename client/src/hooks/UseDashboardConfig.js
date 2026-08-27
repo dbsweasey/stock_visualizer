@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { DEV_IP, PORT } from "../config";
 
 /**
  * Checks backend to grab config. Contains which intervals and
@@ -13,10 +14,13 @@ export default function useDashboardConfig() {
 
   useEffect(() => {
     console.log("Fetching config...")
-    fetch(`http://${DEV_IP}:${PORT}/config`)
-      .then(r => r.json())
+    fetch(`http://localhost:8000/config`)
+      .then((r) => r.json())
       .then(setConfig)
+      .catch((err) => console.error("Fetch failed:", err))
       .finally(() => setLoading(false));
+
+    console.log("Config fetched:", config)
   }, [])
 
   return {config, loading}

@@ -50,7 +50,7 @@ async def random_ingest_basic(delay_low: float=0.5, delay_high: float=4.0, chang
             await TICK_QUEUE.put(tick)
         
         # 4. Wait for random time
-        logger.info("---TICK---")
+        # logger.info("---TICK---")
         await asyncio.sleep(random.uniform(delay_low, delay_high))
 
 # High freq digestion function
